@@ -1,5 +1,5 @@
 # Contextual-Compression
-Contextual compression for RAG based applications.
+Contextual compression for RAG-based applications.
 
 ### Steps to install and run:
 
@@ -8,11 +8,11 @@ Contextual compression for RAG based applications.
     ```
     pip install -r venv_requirements.txt
     ```
-3. Make a .env file in the root folder with the following ecredentials:
+3. Make a .env file in the root folder with the following credentials:
     ```
-    API_KEY='IBM_cloud_API_Key'
+    API_KEY='IBM_cloud_API_Key' or, any other LLM API keys of your choice. make proper initialization
     PROJECT_ID=<Watsonx_Project_id>
-    IBM_CLOUD_URL='https://us-south.ml.cloud.ibm.com'  # Change the URL according to your region.
+    IBM_CLOUD_URL='IBM cloud url'  # Change the URL according to your region.
     GENAI_KEY=<BAM_API_Key>
     GENAI_API=https://bam-api.res.ibm.com
     ```
@@ -26,7 +26,7 @@ Contextual compression for RAG based applications.
 
 `Limitations`
 
-One problem with this approach is that when you ingest data into your document storage system, you often don’t know what specific queries will be used to retrieve those documents. In our notes Q&A example, we simply partitioned our text into equally-sized chunks. That means that when we get a specific user question and retrieve a document, even if the document has some relevant text it likely has some irrelevant text as well.
+One problem with this approach is that when you ingest data into your document storage system, you often don’t know what specific queries will be used to retrieve those documents. In our notes Q&A example, we simply partitioned our text into equally sized chunks. That means that when we get a specific user question and retrieve a document, even if the document has some relevant text it likely has some irrelevant text as well.
 
 Inserting irrelevant information into the LLM prompt is bad because:
 
@@ -38,7 +38,7 @@ Inserting irrelevant information into the LLM prompt is bad because:
 - Chunking strategies
 - Cleaning data
 - Prompt engineering
-- picking up a better domain specific embedding model
+- picking up a better domain-specific embedding model
 - Fine Tuning of embedding model
 - Compressing the context
 
@@ -59,18 +59,18 @@ The idea is simple: instead of immediately returning retrieved documents as-is, 
 - LLmLingua
     - LongLLMLinguaPostprocessor (takes time to process)
 - In-context auto-encoder: https://arxiv.org/pdf/2307.06945.pdf
-- Semantic compression using topic modelling: https://arxiv.org/pdf/2312.09571.pdf 
+- Semantic compression using topic modeling: https://arxiv.org/pdf/2312.09571.pdf 
 - and many more...
 
 Note: the last 2 methods need pre-trained models. 
 
-`How these work?`
+`How do these work?`
 
 To use the Contextual Compression Retriever, you’ll need: 
 - a base retriever & 
 - a Document Compressor
 
-The Contextual Compression Retriever passes queries to the base retriever, takes the initial documents and passes them through the Document Compressor. The Document Compressor takes a list of documents and shortens it by reducing the contents of documents or dropping documents altogether.
+The Contextual Compression Retriever passes queries to the base retriever, takes the initial documents, and passes them through the Document Compressor. The Document Compressor takes a list of documents and shortens it by reducing the contents of documents or dropping documents altogether.
 
 1) Langchain's - 
 
@@ -90,7 +90,7 @@ The Contextual Compression Retriever passes queries to the base retriever, takes
         ```
     - `Contextual compression with an EmbeddingsFilter`
 
-        Making an extra LLM call over each retrieved document is expensive and slow. The EmbeddingsFilter provides a cheaper and faster option by embedding the documents and query and only returning those documents which have sufficiently similar embeddings to the query.
+        Making an extra LLM call over each retrieved document is expensive and slow. The EmbeddingsFilter provides a cheaper and faster option by embedding the documents and query and only returning those documents that have sufficiently similar embeddings to the query.
         ```
         embeddings = HuggingFaceBgeEmbeddings() # could be any embedding of your choice
         embeddings_filter = EmbeddingsFilter(embeddings=embeddings, similarity_threshold=0.76)
@@ -103,7 +103,7 @@ The Contextual Compression Retriever passes queries to the base retriever, takes
         ```
     - `Stringing compressors and document transformers together - DocumentCompressorPipeline`
 
-        Using the DocumentCompressorPipeline we can also easily combine multiple compressors in sequence. Along with compressors we can add BaseDocumentTransformers to our pipeline, which don’t perform any contextual compression but simply perform some transformation on a set of documents. For example TextSplitters can be used as document transformers to split documents into smaller pieces, and the EmbeddingsRedundantFilter can be used to filter out redundant documents based on embedding similarity between documents.
+        Using the DocumentCompressorPipeline we can also easily combine multiple compressors in sequence. Along with compressors, we can add BaseDocumentTransformers to our pipeline, which don’t perform any contextual compression but simply perform some transformation on a set of documents. For example, TextSplitters can be used as document transformers to split documents into smaller pieces, and the EmbeddingsRedundantFilter can be used to filter out redundant documents based on embedding similarity between documents.
 
         - splitter (create small chunks)
         - redundant filter (remove similar docs — embedded)
@@ -127,9 +127,9 @@ The Contextual Compression Retriever passes queries to the base retriever, takes
 
     There are 3 components to it:
 
-    a) `Budget controller (use smaller LLMs e.g. GPT-2, Llama etc.)`
+    a) `Budget controller (use smaller LLMs e.g. GPT-2, Llama, etc.)`
         
-    calculate perplexity, which is the surprise factor, (calculated as the Exp of mean of log likelihood of all the words in the input sequence) of each context chunk or, demonstration. Use the highest valued ones.
+    calculate perplexity, which is the surprise factor, (calculated as the Exp of the mean of log-likelihood of all the words in the input sequence) of each context chunk or, demonstration. Use the highest valued ones.
 
     b) `Iterative token level prompt compression algorithm (ITPC)`
 
@@ -137,7 +137,7 @@ The Contextual Compression Retriever passes queries to the base retriever, takes
     - use small LLMs to determine perplexity distribution across these segments
     - retain tokens with high perplexity — ensuring key info is present by considering the conditional dependence between the tokens
 
-    c) instruction tuning based method that syncs the distribut patterns of the large and small language models (optional)
+    c) instruction tuning-based method that syncs the distribution patterns of the large and small language models (optional)
 
     ```
     # Create a base retriever and retrieve base nodes
