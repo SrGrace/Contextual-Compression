@@ -16,7 +16,7 @@ Contextual compression for RAG-based applications.
     GENAI_KEY=<BAM_API_Key>
     GENAI_API=https://bam-api.res.ibm.com
     ```
-4. Run the contextual_compression_main.ipynb file or, experiment with any other
+4. Run the main.py file or, experiment with any other
 
 ### Simple RAG
 
